@@ -61,4 +61,45 @@ describe('module/thea-test-uploader', function() {
       });
     });
   });
+
+  describe('#_runIfNotOnMaster', function() {
+    var runIfNotOnMaster;
+
+    beforeEach(function() {
+      runIfNotOnMaster = TestUploader.__get__('runIfNotOnMaster');
+    });
+
+    it('should not call callback if on master', function() {
+      gitInfoStub.isOnBranch.resolves(true);
+
+      var stub = sinon.stub();
+
+      return runIfNotOnMaster('sha', stub)
+      .then(function() {
+        assert.notCalled(stub);
+      });
+    });
+
+    it('should call callback if not on master', function() {
+      gitInfoStub.isOnBranch.resolves(false);
+
+      var stub = sinon.stub().resolves();
+
+      return runIfNotOnMaster('sha', stub)
+      .then(function() {
+        assert.calledOnce(stub);
+      });
+    });
+
+    it('should chain callback if not on master', function() {
+      gitInfoStub.isOnBranch.resolves(false);
+
+      var stub = sinon.stub().resolves(4);
+
+      return runIfNotOnMaster('sha', stub)
+      .then(function(result) {
+        assert.strictEqual(result, 4);
+      });
+    });
+  });
 });
