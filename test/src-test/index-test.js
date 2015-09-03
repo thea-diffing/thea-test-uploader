@@ -19,6 +19,11 @@ describe('module/thea-test-uploader', function() {
     gitInfoStub = require('../../lib/gitInfo');
     sinon.stub(gitInfoStub);
 
+    gitInfoStub.getBranchAndSha.resolves({
+      branch: 'fakeBranch',
+      sha: 'fakeSha'
+    });
+
     options = {
       project: 'project',
       numBrowsers: 2
@@ -29,11 +34,7 @@ describe('module/thea-test-uploader', function() {
       './gitInfo': gitInfoStub
     });
 
-    var stub = sinon.stub(TestUploader.prototype, '_setup').resolves();
-
     testUploader = new TestUploader(options);
-
-    stub.restore();
   });
 
   describe('#constructor', function() {
@@ -46,18 +47,10 @@ describe('module/thea-test-uploader', function() {
 
   describe('#_setup', function() {
     it('saves branch and sha', function() {
-      gitInfoStub.getBranchAndSha.resolves({
-        branch: 'branch',
-        sha: 'sha'
-      });
-
-      assert.isUndefined(testUploader.branch);
-      assert.isUndefined(testUploader.sha);
-
-      return testUploader._setup()
+      return testUploader.promise
       .then(function() {
-        assert.strictEqual(testUploader.branch, 'branch');
-        assert.strictEqual(testUploader.sha, 'sha');
+        assert.strictEqual(testUploader.branch, 'fakeBranch');
+        assert.strictEqual(testUploader.sha, 'fakeSha');
       });
     });
   });
@@ -99,6 +92,30 @@ describe('module/thea-test-uploader', function() {
       return runIfNotOnMaster('sha', stub)
       .then(function(result) {
         assert.strictEqual(result, 4);
+      });
+    });
+  });
+
+  describe('#start', function() {
+    var runIfNotOnMasterOrig;
+    var runIfNotOnMasterStub;
+
+    beforeEach(function() {
+      runIfNotOnMasterStub = sinon.stub().resolves();
+      runIfNotOnMasterOrig = TestUploader.__get__('runIfNotOnMaster');
+      TestUploader.__set__('runIfNotOnMaster', runIfNotOnMasterStub);
+    });
+
+    afterEach(function() {
+      TestUploader.__set__('runIfNotOnMaster', runIfNotOnMasterOrig);
+    });
+
+    it('should call runIfNotOnMaster with start build', function() {
+      return testUploader.start()
+      .then(function() {
+        var startBuildAgainstAncestor = testUploader._startBuildAgainstAncestor;
+
+        assert.calledWith(runIfNotOnMasterStub, 'fakeSha', startBuildAgainstAncestor);
       });
     });
   });
