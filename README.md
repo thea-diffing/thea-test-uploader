@@ -19,3 +19,51 @@ When this package is run from the master branch, the current images are uploaded
 ```sh
 $ npm install thea-test-uploader --save-dev
 ```
+
+## Usage
+
+
+### `constructor({ integer numBrowsers, thea-sdk-options options })`
+
+Create a new instance of the TheaTestUploader. All options will be passed through to an instance of the [thea-js-sdk](https://github.com/thea-diffing/thea-js-sdk).
+
+```
+var TheaTestUploader = require('thea-test-uploader');
+
+var theaTestUploader = new TheaTestUploader({
+  api: 'https://my-thea-instance.com'
+  project: '092f9894-26b0-4482-9eba-c287cb99fc62',
+  numBrowsers: 3
+});
+```
+
+### `start()`
+
+Call `start` once to conditionally start a build on Thea if the current sha is not on master.
+
+```
+theaTestUploader.start();
+```
+
+### `runAndUpload({ string browser, string imagePath, function runner })`
+
+Call `runAndUpload` once for each browser you want to run your tests in.
+
+`imagePath` should be the path where the images for this browser are saved.
+
+`runner` needs to be a function that when called returns a promise. Once this promise resolves `imagePath` will be uploaded to the API.
+
+```
+function runMyBrowserTests() {
+  return new Promise(function(resolve) {
+    // capture screenshots to imagePath and call resolve
+  });
+}
+
+theaTestUploader.run({
+  browser: 'chrome',
+  imagePath: path.join(__dirname, 'screenshots', 'chrome'),
+  runner: runMyBrowserTests
+});
+```
+
