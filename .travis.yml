@@ -1,0 +1,17 @@
+language: node_js
+script: npm test
+node_js:
+- node
+- io.js
+- '0.12'
+notifications:
+  email: false
+deploy:
+  provider: npm
+  email: npm@eli-white.com
+  api_key:
+    secure: InLvjCRIOnemOGCXlV8gawgobxxWyiugcA3Fg0PQwt6dDC3FH8rXPUl2Y+9Cg01LJEHNdrNLASNIofKKjTDp+Ff/tlSw16cAb0M/mpump5/9hjN7sgPwd9jZvGunRELllOLTo4Fy+H7JZw81C3Du0dqrXTKAsUH50hJcGtppjFrK1O6JDq36E4QUMxQCHTH2tl4XuTe7I7WHeC3cAuoXTeIBPdD9cHQXEbehjo/V3mgOSJ0cqctcPN995Y5m1xc6A76EC2pGK5GFqI7Mw/vNxk3iCffkm+ulFhVpB1suaUP+KMthygrrnQqbJPKPt39Y58C7Bx0VQsqUdhF6DPsHWR81EjAgN1OJqUQU7vlExF6vJYUj9xsaZVJOvRaNaRnkEFXPfnu52zoN8jzOXz26+zI9Of0+qhTNIq0dmLHGTnPcotoko0JzTTTYDDAtQdU03VXbIET4HZXXugjBYH7W+EoxL3U8WS/3/Wj6q3ibQ/+dsqRXyQRdOG2PnD8fjGRW/e8Q50lbfs3WCzp3C10CVWlGeiRMxLwxFv5+SR7uYSRCRSNXSPkg+AL4k3CnmG/4Wyt1sVbWYXLSYzOIePvu2pUUKaOZo5bfdvjekz6MLh7axc4Z5xed+of+CsPqYf30H2g+4e4tHkqv3LEGgq/xzJ56jeo+8f04Mu2l4Qtu9t0=
+  on:
+    tags: true
+    repo: thea-diffing/thea-test-uploader
+    node: node
