@@ -1,7 +1,7 @@
 {
   "name": "thea-test-uploader",
   "version": "0.1.0",
-  "description": "",
+  "description": "A library to help upload images to thea from your app",
   "main": "lib/index.js",
   "scripts": {
     "test": "eslint . && jscs lib test && mocha"
