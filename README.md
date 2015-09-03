@@ -60,7 +60,7 @@ function runMyBrowserTests() {
   });
 }
 
-theaTestUploader.run({
+theaTestUploader.runAndUpload({
   browser: 'chrome',
   imagePath: path.join(__dirname, 'screenshots', 'chrome'),
   runner: runMyBrowserTests
