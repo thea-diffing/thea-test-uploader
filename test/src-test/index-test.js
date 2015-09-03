@@ -10,14 +10,21 @@ describe('module/thea-test-uploader', function() {
   var testUploader;
   var options;
   var gitInfoStub;
+  var theaSdkStub;
+  var gitCommonAncestorStub;
 
   beforeEach(function() {
     function TheaSdkStub() {
-      return sinonOrig.createStubInstance(TheaSdk);
+      var instance = sinonOrig.createStubInstance(TheaSdk);
+      theaSdkStub = instance;
+      return instance;
     }
 
     gitInfoStub = require('../../lib/gitInfo');
     sinon.stub(gitInfoStub);
+
+    gitCommonAncestorStub = require('git-common-ancestor');
+    sinon.stub(gitCommonAncestorStub);
 
     gitInfoStub.getBranchAndSha.resolves({
       branch: 'fakeBranch',
@@ -31,7 +38,8 @@ describe('module/thea-test-uploader', function() {
 
     TestUploader = proxyquire('../../', {
       'thea-js-sdk': TheaSdkStub,
-      './gitInfo': gitInfoStub
+      'git-common-ancestor': gitCommonAncestorStub,
+      './gitInfo': gitInfoStub,
     });
 
     testUploader = new TestUploader(options);
@@ -96,6 +104,39 @@ describe('module/thea-test-uploader', function() {
     });
   });
 
+  describe('#_startBuildAgainstAncestor', function() {
+    it('should call ofShaAndBranch with sha or origin master', function() {
+      gitCommonAncestorStub.ofShaAndBranch.resolves('ancestor');
+
+      return testUploader._startBuildAgainstAncestor()
+      .then(function() {
+        assert.calledWith(gitCommonAncestorStub.ofShaAndBranch, 'fakeSha', 'origin/master');
+      });
+    });
+
+    it('should start build with ancestor a number of browsers', function() {
+      gitCommonAncestorStub.ofShaAndBranch.resolves('ancestor');
+
+      return testUploader._startBuildAgainstAncestor()
+      .then(function() {
+        assert.calledWith(theaSdkStub.startBuild, {
+          head: 'fakeSha',
+          base: 'ancestor',
+          numBrowsers: 2
+        });
+      });
+    });
+
+    it('should return a thenable', function() {
+      gitCommonAncestorStub.ofShaAndBranch.resolves('ancestor');
+      theaSdkStub.startBuild.resolves();
+
+      var start = testUploader._startBuildAgainstAncestor();
+
+      assert.isFunction(start.then);
+    });
+  });
+
   describe('#start', function() {
     var runIfNotOnMasterOrig;
     var runIfNotOnMasterStub;
@@ -117,6 +158,56 @@ describe('module/thea-test-uploader', function() {
 
         assert.calledWith(runIfNotOnMasterStub, 'fakeSha', startBuildAgainstAncestor);
       });
+    });
+
+    it('should return a thenable', function() {
+      var start = testUploader.start();
+
+      assert.isFunction(start.then);
+    });
+  });
+
+  describe('#runAndUpload', function() {
+    it('should reject if not given function that returns a promise', function() {
+      function testRunner() {
+        return 'foo';
+      }
+
+      return testUploader.runAndUpload({
+        browser: 'chrome',
+        imagePath: __dirname,
+        runner: testRunner
+      })
+      .then(function() {
+        assert.fail();
+      },
+      function(err) {
+        assert.include(err.message, 'thenable');
+      });
+    });
+
+    it('should call testRunner and then upload', function() {
+      function testRunner() {
+        return Promise.resolve();
+      }
+
+      var runnerSpy = sinon.spy(testRunner);
+
+      return testUploader.runAndUpload({
+        browser: 'chrome',
+        imagePath: 'imagePath',
+        runner: runnerSpy
+      })
+      .then(function() {
+        assert.calledWith(theaSdkStub.upload, {
+          sha: 'fakeSha',
+          browser: 'chrome',
+          imagePath: 'imagePath'
+        });
+
+        assert.callOrder(runnerSpy, theaSdkStub.upload);
+      });
+
     });
   });
 });
