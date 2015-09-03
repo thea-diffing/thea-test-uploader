@@ -39,7 +39,7 @@ describe('module/thea-test-uploader', function() {
     TestUploader = proxyquire('../../', {
       'thea-js-sdk': TheaSdkStub,
       'git-common-ancestor': gitCommonAncestorStub,
-      './gitInfo': gitInfoStub,
+      './gitInfo': gitInfoStub
     });
 
     testUploader = new TestUploader(options);
