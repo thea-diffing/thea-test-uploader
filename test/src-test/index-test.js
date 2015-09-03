@@ -14,7 +14,7 @@ describe('module/thea-test-uploader', function() {
   beforeEach(function() {
     function TheaSdkStub() {
       return sinonOrig.createStubInstance(TheaSdk);
-    };
+    }
 
     gitInfoStub = require('../../lib/gitInfo');
     sinon.stub(gitInfoStub);
