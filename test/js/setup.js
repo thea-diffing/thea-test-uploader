@@ -8,6 +8,8 @@ var chai = require('chai');
 chai.config.includeStack = true;
 
 var sinon = require('sinon');
+require('sinon-as-promised');
+
 sinon.assert.expose(chai.assert, {
   prefix: ''
 });
