@@ -12,6 +12,7 @@ describe('module/thea-test-uploader', function() {
   var gitInfoStub;
   var theaSdkStub;
   var gitCommonAncestorStub;
+  var consoleLogStub;
 
   beforeEach(function() {
     function TheaSdkStub() {
@@ -30,6 +31,8 @@ describe('module/thea-test-uploader', function() {
       branch: 'fakeBranch',
       sha: 'fakeSha'
     });
+
+    consoleLogStub = sinon.stub(console, 'log');
 
     options = {
       project: 'project',
@@ -50,6 +53,36 @@ describe('module/thea-test-uploader', function() {
       assert.isDefined(testUploader.numBrowsers);
       assert.instanceOf(testUploader.sdk, TheaSdk);
       assert.isFunction(testUploader.promise.then);
+    });
+
+    it('should default to not verbose', function() {
+      assert.isFalse(testUploader.verbose);
+    });
+
+    it('should take verbose from options if set', function() {
+      options.verbose = true;
+
+      testUploader = new TestUploader(options);
+
+      assert.isTrue(testUploader.verbose);
+    });
+  });
+
+  describe('#_log', function() {
+    it('should call console log if verbose', function() {
+      testUploader.verbose = true;
+
+      testUploader._log('foo', 'bar');
+
+      assert.calledWith(consoleLogStub, 'foo', 'bar');
+    });
+
+    it('should not call console log if not verbose', function() {
+      testUploader.verbose = false;
+
+      testUploader._log('foo', 'bar');
+
+      assert.notCalled(consoleLogStub);
     });
   });
 
@@ -107,9 +140,14 @@ describe('module/thea-test-uploader', function() {
   describe('#_startBuildAgainstAncestor', function() {
     it('should call ofShaAndBranch with sha or origin master', function() {
       gitCommonAncestorStub.ofShaAndBranch.resolves('ancestor');
+      var logStub = sinon.stub(testUploader, '_log');
 
       return testUploader._startBuildAgainstAncestor()
       .then(function() {
+        assert.calledWith(logStub, sinon.match(function(value) {
+          return value.indexOf('Not on master. Starting build between') >= 0;
+        }));
+
         assert.calledWith(gitCommonAncestorStub.ofShaAndBranch, 'fakeSha', 'origin/master');
       });
     });
@@ -207,7 +245,27 @@ describe('module/thea-test-uploader', function() {
 
         assert.callOrder(runnerSpy, theaSdkStub.upload);
       });
+    });
 
+    it('should log that it is uploading', function() {
+      var logStub = sinon.stub(testUploader, '_log');
+
+      function testRunner() {
+        return Promise.resolve();
+      }
+
+      var runnerSpy = sinon.spy(testRunner);
+
+      return testUploader.runAndUpload({
+        browser: 'chrome',
+        imagePath: 'imagePath',
+        runner: runnerSpy
+      })
+      .then(function() {
+        assert.calledWith(logStub, sinon.match(function(value) {
+          return value.indexOf('Uploading images for browser') >= 0;
+        }));
+      });
     });
   });
 });
