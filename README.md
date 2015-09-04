@@ -23,9 +23,12 @@ $ npm install thea-test-uploader --save-dev
 ## Usage
 
 
-### `constructor({ integer numBrowsers, thea-sdk-options options })`
+### `constructor({ integer numBrowsers, boolean verbose, thea-sdk-options options })`
 
 Create a new instance of the TheaTestUploader. All options will be passed through to an instance of the [thea-js-sdk](https://github.com/thea-diffing/thea-js-sdk).
+
+If `verbose` is true then message will be logged to the console when starting a build and uploading. Defaults to false.
+
 
 ```
 var TheaTestUploader = require('thea-test-uploader');
