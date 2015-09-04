@@ -1,6 +1,6 @@
 {
   "name": "thea-test-uploader",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A library to help upload images to thea from your app",
   "main": "lib/index.js",
   "scripts": {
